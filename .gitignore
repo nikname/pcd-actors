@@ -1,2 +1,5 @@
-# IDE files and settings
+# Intellij IDEA
 .idea
+
+# Maven
+target

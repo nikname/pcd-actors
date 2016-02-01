@@ -35,47 +35,26 @@
  * @version 1.0
  * @since 1.0
  */
-package it.unipd.math.pcd.actors;
+package it.unipd.math.pcd.actors.utils.messages.ping.pong;
 
-import it.unipd.math.pcd.actors.impl.ActorSystemImpl;
-import it.unipd.math.pcd.actors.utils.ActorSystemFactory;
-import it.unipd.math.pcd.actors.utils.actors.TrivialActor;
-import it.unipd.math.pcd.actors.utils.messages.TrivialMessage;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import it.unipd.math.pcd.actors.Message;
+import it.unipd.math.pcd.actors.utils.actors.ping.pong.PingPongActor;
 
 /**
- * Test cases about {@link ActorRef} type.
+ * Message sent by {@link PingPongActor}
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
-public class ActorRefTest {
+public abstract class PingPongMessage implements Message {
+    private String message;
 
-    private ActorSystem system;
-
-    /**
-     * Initializes the {@code system} with a concrete implementation before each test.
-     */
-    @Before
-    public void init() {
-        system = ActorSystemFactory.buildActorSystem();
+    public PingPongMessage(String message) {
+        this.message = message;
     }
 
-    @Test
-    public void shouldImplementComparable() {
-        ActorRef ref1 = system.actorOf(TrivialActor.class);
-        ActorRef ref2 = system.actorOf(TrivialActor.class);
-        Assert.assertNotEquals("Two references must appear as different using the compareTo method",
-                0, ref1.compareTo(ref2));
-        Assert.assertEquals("A reference must be equal to itself according to compareTo method",
-                0, ref1.compareTo(ref1));
+    public String getMessage() {
+        return message;
     }
 }
-
-
-
-
-

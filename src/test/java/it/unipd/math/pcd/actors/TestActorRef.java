@@ -37,45 +37,51 @@
  */
 package it.unipd.math.pcd.actors;
 
-import it.unipd.math.pcd.actors.impl.ActorSystemImpl;
-import it.unipd.math.pcd.actors.utils.ActorSystemFactory;
-import it.unipd.math.pcd.actors.utils.actors.TrivialActor;
-import it.unipd.math.pcd.actors.utils.messages.TrivialMessage;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import it.unipd.math.pcd.actors.*;
 
 /**
- * Test cases about {@link ActorRef} type.
+ * Decorates an {@link ActorRef} adding the ability to get the underlying actor associated to the reference.
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
-public class ActorRefTest {
+public class TestActorRef<T extends Message> implements ActorRef<T> {
 
-    private ActorSystem system;
+    private ActorRef<T> reference;
+
+    public TestActorRef(ActorRef<T> actorRef) {
+        this.reference = actorRef;
+    }
 
     /**
-     * Initializes the {@code system} with a concrete implementation before each test.
+     * Returns the {@link Actor} associated to the internal reference.
+     * @param system Actor system from which retrieving the actor
+     *
+     * @return An actor
      */
-    @Before
-    public void init() {
-        system = ActorSystemFactory.buildActorSystem();
+    public Actor<T> getUnderlyingActor(ActorSystem system) {
+        // TODO To implement
+        return null;
     }
 
-    @Test
-    public void shouldImplementComparable() {
-        ActorRef ref1 = system.actorOf(TrivialActor.class);
-        ActorRef ref2 = system.actorOf(TrivialActor.class);
-        Assert.assertNotEquals("Two references must appear as different using the compareTo method",
-                0, ref1.compareTo(ref2));
-        Assert.assertEquals("A reference must be equal to itself according to compareTo method",
-                0, ref1.compareTo(ref1));
+    @Override
+    public void send(T message, ActorRef to) {
+        reference.send(message, to);
+    }
+
+    @Override
+    public int compareTo(ActorRef o) {
+        return reference.compareTo(o);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return reference.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return reference.hashCode();
     }
 }
-
-
-
-
-

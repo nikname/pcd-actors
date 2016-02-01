@@ -37,7 +37,7 @@
  */
 package it.unipd.math.pcd.actors;
 
-import it.unipd.math.pcd.actors.impl.ActorSystemImpl;
+import it.unipd.math.pcd.actors.exceptions.NoSuchActorException;
 import it.unipd.math.pcd.actors.utils.ActorSystemFactory;
 import it.unipd.math.pcd.actors.utils.actors.TrivialActor;
 import it.unipd.math.pcd.actors.utils.messages.TrivialMessage;
@@ -46,13 +46,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test cases about {@link ActorRef} type.
+ * Tests features of an actors' system.
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
-public class ActorRefTest {
+public class ActorSystemTest {
 
     private ActorSystem system;
 
@@ -65,17 +65,44 @@ public class ActorRefTest {
     }
 
     @Test
-    public void shouldImplementComparable() {
+    public void shouldCreateAnActorRefWithActorOfTest() {
+        ActorRef ref = system.actorOf(TrivialActor.class);
+        Assert.assertNotNull("A reference was created and it is not null", ref);
+    }
+
+    @Test
+    public void shouldCreateAnActorRefOfWithActorModeLocalTest() {
+        ActorRef ref = system.actorOf(TrivialActor.class, ActorSystem.ActorMode.LOCAL);
+        Assert.assertNotNull("A reference to a local actor was created and it is not null", ref);
+    }
+
+    /**
+     * It is not requested to implement remote mode for actors anymore. So, an attempt to create a remote
+     * actor should rise an {@link IllegalArgumentException}
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldCreateAnActorRefOfWithActorModeRemoteTest() {
+        system.actorOf(TrivialActor.class, ActorSystem.ActorMode.REMOTE);
+    }
+
+    @Test
+    public void shouldBeAbleToCreateMoreThanOneActor() {
         ActorRef ref1 = system.actorOf(TrivialActor.class);
         ActorRef ref2 = system.actorOf(TrivialActor.class);
-        Assert.assertNotEquals("Two references must appear as different using the compareTo method",
-                0, ref1.compareTo(ref2));
-        Assert.assertEquals("A reference must be equal to itself according to compareTo method",
-                0, ref1.compareTo(ref1));
+        Assert.assertNotEquals("Two references that points to the same actor implementation are not equal", ref1, ref2);
+    }
+
+    @Test(expected = NoSuchActorException.class)
+    public void shouldStopAnActorAndThisCouldNotBeAbleToReceiveNewMessages() {
+        ActorRef ref1 = system.actorOf(TrivialActor.class);
+        system.stop(ref1);
+        ref1.send(new TrivialMessage(), ref1);
+    }
+
+    @Test(expected = NoSuchActorException.class)
+    public void shouldStopAnActorAndThisCouldNotStoppedASecondTime() {
+        ActorRef ref1 = system.actorOf(TrivialActor.class);
+        system.stop(ref1);
+        system.stop(ref1);
     }
 }
-
-
-
-
-

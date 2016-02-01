@@ -35,47 +35,28 @@
  * @version 1.0
  * @since 1.0
  */
-package it.unipd.math.pcd.actors;
+package it.unipd.math.pcd.actors.utils.actors;
 
-import it.unipd.math.pcd.actors.impl.ActorSystemImpl;
-import it.unipd.math.pcd.actors.utils.ActorSystemFactory;
-import it.unipd.math.pcd.actors.utils.actors.TrivialActor;
-import it.unipd.math.pcd.actors.utils.messages.TrivialMessage;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import it.unipd.math.pcd.actors.AbsActor;
+import it.unipd.math.pcd.actors.utils.messages.StoreMessage;
 
 /**
- * Test cases about {@link ActorRef} type.
+ * Please, insert description here.
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
-public class ActorRefTest {
+public class StoreActor extends AbsActor<StoreMessage> {
 
-    private ActorSystem system;
+    private String data;
 
-    /**
-     * Initializes the {@code system} with a concrete implementation before each test.
-     */
-    @Before
-    public void init() {
-        system = ActorSystemFactory.buildActorSystem();
+    @Override
+    public void receive(StoreMessage message) {
+        this.data = message.getPayload();
     }
 
-    @Test
-    public void shouldImplementComparable() {
-        ActorRef ref1 = system.actorOf(TrivialActor.class);
-        ActorRef ref2 = system.actorOf(TrivialActor.class);
-        Assert.assertNotEquals("Two references must appear as different using the compareTo method",
-                0, ref1.compareTo(ref2));
-        Assert.assertEquals("A reference must be equal to itself according to compareTo method",
-                0, ref1.compareTo(ref1));
+    public String getData() {
+        return data;
     }
 }
-
-
-
-
-

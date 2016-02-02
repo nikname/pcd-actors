@@ -21,20 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * <p/>
- * Please, insert description here.
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
 
-/**
- * Please, insert description here.
- *
- * @author Riccardo Cardin
- * @version 1.0
- * @since 1.0
- */
 package it.unipd.math.pcd.actors;
 
 /**
@@ -55,6 +47,11 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
      * Sender of the current message
      */
     protected ActorRef<T> sender;
+
+    /**
+     * Actor mailbox.
+     */
+    private final MailBox<T> mailBox = new MailBox<T>();
 
     /**
      * Sets the self-referece.

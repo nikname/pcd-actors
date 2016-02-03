@@ -21,25 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * <p/>
- * Please, insert description here.
  *
  * @author Riccardo Cardin
  * @version 1.0
  * @since 1.0
  */
 
-/**
- * Please, insert description here.
- *
- * @author Riccardo Cardin
- * @version 1.0
- * @since 1.0
- */
 package it.unipd.math.pcd.actors;
 
 import it.unipd.math.pcd.actors.exceptions.NoSuchActorException;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A map-based implementation of the actor system.
@@ -53,7 +47,7 @@ public abstract class AbsActorSystem implements ActorSystem {
     /**
      * Associates every Actor created with an identifier.
      */
-    private Map<ActorRef<?>, Actor<?>> actors;
+    private Map<ActorRef<?>, Actor<?>> actors = new ConcurrentHashMap<>();
 
     @Override
     public ActorRef<? extends Message> actorOf(Class<? extends Actor> actor, ActorMode mode) {
@@ -80,4 +74,21 @@ public abstract class AbsActorSystem implements ActorSystem {
     }
 
     protected abstract ActorRef createActorReference(ActorMode mode);
+
+    @Override
+    public void stop(ActorRef<?> ref) throws NoSuchActorException {
+        if (actors.containsKey(ref)) {
+            AbsActor<?> actor = (AbsActor) actors.get(ref);
+            actor.interrupt();
+            actors.remove(actor);
+        } else throw new NoSuchActorException();
+    }
+
+    @Override
+    public void stop() {
+        Iterator it = actors.keySet().iterator();
+        while (it.hasNext())
+            stop((ActorRef<?>) it.next());
+    }
+
 }

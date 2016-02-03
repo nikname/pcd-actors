@@ -42,17 +42,18 @@ import java.util.List;
 public class MailBox<T extends Message> {
 
     // LinkedList implementation is not synchronized. Access must be synchronized
-    private final List<MailBoxItem<T>> list = new LinkedList<>();
+    private final List<MailBoxItem> list = new LinkedList<>();
 
     /**
      * Adds a new MailBoxItem (message and sender) to the end of the list.
      *
      * @param message Message received
      * @param sender Sender of the message
+     * @return boolean true if the MailBoxItem was added to the list; false otherwise
      */
-    public void add(T message, ActorRef<T> sender) {
+    public boolean add(T message, ActorRef<T> sender) {
         synchronized (list) {
-            list.add(new MailBoxItem<>(message, sender));
+            return list.add(new MailBoxItem(message, sender));
         }
     }
 
@@ -61,7 +62,7 @@ public class MailBox<T extends Message> {
      *
      * @return MailBoxItem (message and sender)
      */
-    public MailBoxItem<T> remove() {
+    public MailBoxItem remove() {
         synchronized (list) {
             return list.remove(0);
         }
@@ -85,7 +86,7 @@ public class MailBox<T extends Message> {
      * @version 1.0
      * @since 1.0
      */
-    class MailBoxItem<T extends Message> {
+    class MailBoxItem {
 
         private final T message;
         private final ActorRef<T> sender;

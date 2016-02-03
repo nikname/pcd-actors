@@ -22,7 +22,7 @@
  * SOFTWARE.
  * <p/>
  *
- * @author Riccardo Cardin
+ * @author Nicola Dalla Costa
  * @version 1.0
  * @since 1.0
  */
@@ -30,20 +30,33 @@
 package it.unipd.math.pcd.actors;
 
 /**
- * A reference of an actor that allow to locate it in the actor system.
- * Using this reference it is possible to send a message among actors.
+ * Personal implementation of ActorRef.
  *
- * @author Riccardo Cardin
+ * @author Nicola Dalla Costa
  * @version 1.0
  * @since 1.0
  */
-public interface ActorRef<T extends Message> extends Comparable<ActorRef> {
+public class MyActorRef<T extends Message> implements ActorRef<T> {
+
+    private MyActorSystem actorSystem;
 
     /**
-     * Sends a {@code message} to another actor
+     * One-argument constructor definition.
      *
-     * @param message The message to send
-     * @param to The actor to which sending the message
+     * @param actorSystem
      */
-    void send(T message, ActorRef to);
+    public MyActorRef(MyActorSystem actorSystem) {
+        this.actorSystem = actorSystem;
+    }
+
+    @Override
+    public void send(T message, ActorRef to) {
+        AbsActor<T> actor = (AbsActor<T>) actorSystem.getActorByRef(to);
+        actor.storeMessage(message, this);
+    }
+
+    @Override
+    public int compareTo(ActorRef ref) {
+        return (this == ref) ? 0 : -1;
+    }
 }

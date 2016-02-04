@@ -29,8 +29,8 @@
 
 package it.unipd.math.pcd.actors;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Defines the structure of the mailbox.
@@ -41,30 +41,38 @@ import java.util.List;
  */
 public class MailBox<T extends Message> {
 
-    // LinkedList implementation is not synchronized. Access must be synchronized
-    private final List<MailBoxItem> list = new LinkedList<>();
+    // BlockingQueue implementation is not synchronized. Access must be synchronized
+    private final BlockingQueue<MailBoxItem> queue = new LinkedBlockingQueue<>();
 
     /**
-     * Adds a new MailBoxItem (message and sender) to the end of the list.
+     * Adds a new MailBoxItem (message and sender) to the end of the queue.
      *
      * @param message Message received
      * @param sender Sender of the message
-     * @return boolean true if the MailBoxItem was added to the list; false otherwise
      */
-    public boolean add(T message, ActorRef<T> sender) {
-        synchronized (list) {
-            return list.add(new MailBoxItem(message, sender));
+    public void add(T message, ActorRef<T> sender) {
+        synchronized (queue) {
+            try {
+                queue.put(new MailBoxItem(message, sender));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     /**
-     * Removes and retrieves the oldest MailBoxItem (message and sender) form the list.
+     * Removes and retrieves the oldest MailBoxItem (message and sender) form the queue.
      *
      * @return MailBoxItem (message and sender)
      */
     public MailBoxItem remove() {
-        synchronized (list) {
-            return list.remove(0);
+        synchronized (queue) {
+            try {
+                return queue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 
@@ -74,8 +82,8 @@ public class MailBox<T extends Message> {
      * @return true if the mailbox is empty; false otherwise
      */
     public boolean isEmpty() {
-        synchronized (list) {
-            return list.isEmpty();
+        synchronized (queue) {
+            return queue.isEmpty();
         }
     }
 

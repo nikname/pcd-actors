@@ -71,19 +71,14 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
      *
      * @param message Message received
      * @param sender Sender of the message
-     * @return boolean true if the message was stored; false otherwise
      */
-    public final boolean storeMessage(T message, ActorRef<T> sender) throws NoSuchActorException {
-        boolean success = false;
-
+    public final void storeMessage(T message, ActorRef<T> sender) throws NoSuchActorException {
         if (!interrupted) {
             synchronized (mailBox) {
-                success = mailBox.add(message, sender);
+                mailBox.add(message, sender);
                 mailBox.notifyAll();
             }
         } else throw new NoSuchActorException("Actor can not receive new message!");
-
-        return success;
     }
 
     /**
@@ -128,10 +123,6 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
             }
 
             flushInbox();
-
-            synchronized (this) {
-                interrupt();
-            }
         }
 
         private void executeMessage() {

@@ -47,7 +47,7 @@ public abstract class AbsActorSystem implements ActorSystem {
     /**
      * Associates every Actor created with an identifier.
      */
-    private Map<ActorRef<?>, Actor<?>> actors = new ConcurrentHashMap<>();
+    private final Map<ActorRef<?>, Actor<?>> actors = new ConcurrentHashMap<>();
 
     @Override
     public ActorRef<? extends Message> actorOf(Class<? extends Actor> actor, ActorMode mode) {
@@ -81,7 +81,7 @@ public abstract class AbsActorSystem implements ActorSystem {
             AbsActor<?> actor = (AbsActor) actors.get(ref);
             actor.interrupt();
             actors.remove(actor);
-        } else throw new NoSuchActorException();
+        } else throw new NoSuchActorException("Actor not found!");
     }
 
     @Override

@@ -29,6 +29,8 @@
 
 package it.unipd.math.pcd.actors;
 
+import it.unipd.math.pcd.actors.exceptions.NoSuchActorException;
+
 /**
  * Defines common properties of all actors.
  *
@@ -71,15 +73,15 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
      * @param sender Sender of the message
      * @return boolean true if the message was stored; false otherwise
      */
-    public final boolean storeMessage(T message, ActorRef<T> sender) {
+    public final boolean storeMessage(T message, ActorRef<T> sender) throws NoSuchActorException {
         boolean success = false;
 
-        if(!interrupted) {
+        if (!interrupted) {
             synchronized (mailBox) {
                 success = mailBox.add(message, sender);
                 mailBox.notifyAll();
             }
-        }
+        } else throw new NoSuchActorException("Actor can not receive new message!");
 
         return success;
     }
@@ -87,11 +89,10 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
     /**
      * Set to true the interrupted status flag of the actor.
      */
-    public void interrupt() {
-        interrupted = true;
-        synchronized (mailBox) {
-            mailBox.notifyAll();
-        }
+    public void interrupt() throws NoSuchActorException {
+        if (interrupted)
+            throw new NoSuchActorException("Actor has already been stopped!");
+        else interrupted = true;
     }
 
     /**
@@ -112,37 +113,40 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
 
         @Override
         public void run() {
-            while(!interrupted) {
+            while (!interrupted) {
+                synchronized (mailBox) {
+                    while (mailBox.isEmpty()) {
+                        try {
+                            mailBox.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
                 executeMessage();
             }
 
             flushInbox();
+
+            synchronized (this) {
+                interrupt();
+            }
         }
 
         private void executeMessage() {
-            MailBox<T>.MailBoxItem item;
+            MailBox<T>.MailBoxItem item = mailBox.remove();
 
-            synchronized (mailBox) {
-                while(mailBox.isEmpty()) {
-                    try {
-                        mailBox.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                item = mailBox.remove();
+            synchronized (this) {
+                sender = item.getSender();
+                receive(item.getMessage());
             }
-
-            sender = item.getSender();
-            receive(item.getMessage());
         }
 
         private void flushInbox() {
             synchronized (mailBox) {
-                while(!mailBox.isEmpty()) {
+                while (!mailBox.isEmpty())
                     executeMessage();
-                }
             }
         }
 

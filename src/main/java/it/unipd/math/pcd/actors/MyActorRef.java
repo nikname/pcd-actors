@@ -52,6 +52,7 @@ public class MyActorRef<T extends Message> implements ActorRef<T> {
     @Override
     public void send(T message, ActorRef to) {
         AbsActor<T> actor = (AbsActor<T>) actorSystem.getActorByRef(to);
+        // storeMessage checks if the actor can receive new message
         actor.storeMessage(message, this);
     }
 

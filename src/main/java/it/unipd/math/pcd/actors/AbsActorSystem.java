@@ -47,7 +47,7 @@ public abstract class AbsActorSystem implements ActorSystem {
     /**
      * Associates every Actor created with an identifier.
      */
-    private final Map<ActorRef<?>, Actor<?>> actors = new ConcurrentHashMap<>();
+    private static final Map<ActorRef<?>, Actor<?>> actors = new ConcurrentHashMap<>();
 
     @Override
     public ActorRef<? extends Message> actorOf(Class<? extends Actor> actor, ActorMode mode) {
@@ -77,15 +77,17 @@ public abstract class AbsActorSystem implements ActorSystem {
 
     @Override
     public void stop(ActorRef<?> ref) throws NoSuchActorException {
-        if (actors.containsKey(ref)) {
-            AbsActor<?> actor = (AbsActor) actors.get(ref);
+        AbsActor<?> actor = (AbsActor<?>) getActorByRef(ref);
+
+        if (actor != null) {
             actor.interrupt();
-            actors.remove(actor);
+            // remove actor only after the flush of the inbox
+            removeActorByRef(ref);
         } else throw new NoSuchActorException("Actor not found!");
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         Iterator it = actors.keySet().iterator();
         while (it.hasNext())
             stop((ActorRef<?>) it.next());
@@ -98,11 +100,26 @@ public abstract class AbsActorSystem implements ActorSystem {
      * @return Actor associated to the specified ActorRef
      * @throws NoSuchActorException
      */
-    public Actor<? extends Message> getActorByRef(ActorRef<? extends Message> ref) throws NoSuchActorException {
-        Actor<? extends Message> actor = actors.get(ref);
+    public Actor getActorByRef(ActorRef ref) throws NoSuchActorException {
+        Actor actor = actors.get(ref);
+
         if (actor == null)
             throw new NoSuchActorException();
         else return actor;
+    }
+
+    public synchronized void removeActorByRef(ActorRef<? extends Message> ref) {
+        AbsActor actor = (AbsActor) getActorByRef(ref);
+
+        while (!actor.isInterrupted()) {
+            try {
+                actor.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        actors.remove(ref);
     }
 
 }

@@ -91,6 +91,15 @@ public abstract class AbsActor<T extends Message> implements Actor<T> {
     }
 
     /**
+     * Checks if the actor is interrupted.
+     *
+     * @return true if the actor is interrupted; false otherwise
+     */
+    public synchronized boolean isInterrupted() {
+        return interrupted;
+    }
+
+    /**
      * Redefinition of the default constructor.
      */
     public AbsActor() {
